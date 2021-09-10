@@ -20,9 +20,24 @@ app.secret_key = 'something_special'
 competitions = loadCompetitions()
 clubs = loadClubs()
 
-@app.route('/')
+@app.route('/', methods=['POST', 'GET'])
 def index():
-    return render_template('index.html')
+
+    if session.get('email') is not None:
+
+        club = [club for club in clubs if club['email'] == session.get('email')]
+        return render_template('welcome.html', club=club[0], competitions=competitions)
+    else:
+        if request.method == "POST":
+            try:
+                club = [club for club in clubs if club['email'] == request.form['email']]
+                session['email'] = request.form['email']
+                return render_template('welcome.html', club=club[0], competitions=competitions)
+            except:
+                flash("Bad email or password")
+                return render_template('index.html')
+        else:
+            return render_template('index.html')
 
 @app.route('/showSummary',methods=['POST'])
 def showSummary():
