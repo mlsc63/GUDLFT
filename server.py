@@ -1,17 +1,17 @@
 import json
-from flask import Flask,render_template,request,redirect,flash,url_for, session
+from flask import Flask, render_template, request, redirect, flash, url_for, session
 
 
 def loadClubs():
     with open('clubs.json') as c:
-         listOfClubs = json.load(c)['clubs']
-         return listOfClubs
+        listOfClubs = json.load(c)['clubs']
+        return listOfClubs
 
 
 def loadCompetitions():
     with open('competitions.json') as comps:
-         listOfCompetitions = json.load(comps)['competitions']
-         return listOfCompetitions
+        listOfCompetitions = json.load(comps)['competitions']
+        return listOfCompetitions
 
 
 app = Flask(__name__)
@@ -23,7 +23,6 @@ clubs = loadClubs()
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
-
     if session.get('email') is not None:
 
         club = [club for club in clubs if club['email'] == session.get('email')]
@@ -40,7 +39,6 @@ def index():
                 return render_template('index.html')
         else:
             return render_template('index.html')
-
 
 
 @app.route('/book/<competition>/<club>')
@@ -66,20 +64,21 @@ def book(competition, club):
         return render_template('index.html')
 
 
-
-@app.route('/purchasePlaces',methods=['POST'])
+@app.route('/purchasePlaces', methods=['POST'])
 def purchasePlaces():
     if session.get('email'):
         try:
             competition = [c for c in competitions if c['name'] == request.form['competition']][0]
             club = [c for c in clubs if c['name'] == request.form['club']][0]
             placesRequired = int(request.form['places'])
+            PlacesByPoints = placesRequired * 3
             if club['email'] == session.get('email'):
                 if club['email'] == session.get('email'):
                     print(club['email'])
-                    if (placesRequired <= 12) and (int(competition['numberOfPlaces']) - placesRequired >= 0) and (int(club["points"]) - placesRequired >= 0):
-                        competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - placesRequired
-                        club["points"] = int(club['points']) - placesRequired
+                    if (PlacesByPoints <= 12) and (int(competition['numberOfPlaces']) - PlacesByPoints >= 0) and \
+                            (int(club["points"]) - PlacesByPoints >= 0):
+                        competition['numberOfPlaces'] = int(competition['numberOfPlaces']) - PlacesByPoints
+                        club["points"] = int(club['points']) - PlacesByPoints
                         flash('Great-booking complete!')
                         return render_template('welcome.html', club=club, competitions=competitions)
                     else:
@@ -97,7 +96,6 @@ def purchasePlaces():
     else:
         flash('Not connected')
         return render_template('index.html')
-
 
 
 @app.route('/display')
